@@ -74,6 +74,40 @@ final class HttpRequest implements Runnable{
 		String fileName = tokens.nextToken();
 		fileName = "." + fileName;
 		
+		FileInputStream fis = null;
+		boolean fileExists = true;
+		
+		try{
+			fis = new FileInputStream(fileName);
+		} catch (FileNotFoundException e){
+			fileExists = false;
+		}
+		
+		String statusLine = null;
+		String contentTypeLine = null;
+		String entityBody = null;
+		
+		if(fileExists){
+			statusLine = "200 OK";
+			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
+		} else{
+			statusLine = "404 Not Found";
+			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
+			entityBody = "<html>" + "<head><title>Not Found</title></head>"+
+						"<body>Not Found</body></html>";
+		}
+		
+		os.writeBytes(statusLine);
+		os.writeBytes(contentTypeLine);
+		os.writeBytes(CRLF);
+		
+		if(fileExists){
+			sendBytes(fis, os);
+			fis.close();
+		} else{
+			os.writeBytes(entityBody);
+		}
+		
 		String headerLine = null;
 		while((headerLine = br.readLine()).length() != 0 ){
 			System.out.println(headerLine);
@@ -82,6 +116,28 @@ final class HttpRequest implements Runnable{
 		os.close();
 		br.close();
 		socket.close();
+	}
+	
+	private static void sendBytes(FileInputStream fis, OutputStream os) throws Exception{
+		byte[] buffer = new byte[1024];
+		int bytes = 0;
+		
+		while((bytes = fis.read(buffer)) != -1){
+			os.write(buffer, 0, bytes);
+		}
+	}
+	
+	private static String contentType(String fileName){
+		if(fileName.endsWith(".htm") || fileName.endsWith(".html")){
+			return "text/html";
+		}
+		if(fileName.endsWith(".gif")){
+			return "image/gif";
+		}
+		if(fileName.endsWith(".jpeg") || fileName.endsWith(".jpg")){
+			return "image/jpeg";
+		}
+		return "application/octet-stream";
 	}
 	
 }
