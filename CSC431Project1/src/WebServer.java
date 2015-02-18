@@ -61,6 +61,7 @@ final class HttpRequest implements Runnable{
 	private void processRequest() throws Exception{
 		InputStream is = socket.getInputStream();
 		DataOutputStream os = new DataOutputStream(socket.getOutputStream());
+		PrintWriter pw = new PrintWriter(socket.getOutputStream());
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		
@@ -88,38 +89,37 @@ final class HttpRequest implements Runnable{
 		String entityBody = null;
 		
 		if(fileExists){
-			statusLine = "200 OK" + CRLF;
+			statusLine = "200 OK";
 			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
+						
+			pw.write(statusLine);
+			pw.write(CRLF);
+			pw.write(contentTypeLine);
+			pw.write(CRLF);
 		} else{
-			statusLine = "404 Not Found" + CRLF;
+			statusLine = "404 Not Found";
 			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
 			entityBody = "<html>" + "<head><title>Not Found</title></head>"+
 						"<body>Not Found</body></html>";
+			
+			os.writeBytes(statusLine);
+			os.writeBytes(CRLF);
+			os.writeBytes(contentTypeLine);
+			os.writeBytes(CRLF);
 		}
-		
-		PrintWriter pw = new PrintWriter(socket.getOutputStream());
-		
-		pw.write(statusLine);
-		pw.write(contentTypeLine);
-		pw.write(CRLF);
-		
-		/*os.writeBytes(statusLine);
-		os.writeBytes(contentTypeLine);
-		os.writeBytes(CRLF);*/
 		
 		if(fileExists){
 			sendBytes(fis, os);
 			fis.close();
 		} else{
-			pw.write(entityBody);
-			//os.writeBytes(entityBody);
+			os.writeBytes(entityBody);
 		}
 		
 		String headerLine = null;
 		while((headerLine = br.readLine()).length() != 0 ){
 			System.out.println(headerLine);
 		}
-		
+
 		os.close();
 		br.close();
 		socket.close();
