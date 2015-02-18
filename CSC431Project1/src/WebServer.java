@@ -88,24 +88,31 @@ final class HttpRequest implements Runnable{
 		String entityBody = null;
 		
 		if(fileExists){
-			statusLine = "200 OK";
+			statusLine = "200 OK" + CRLF;
 			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
 		} else{
-			statusLine = "404 Not Found";
+			statusLine = "404 Not Found" + CRLF;
 			contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
 			entityBody = "<html>" + "<head><title>Not Found</title></head>"+
 						"<body>Not Found</body></html>";
 		}
 		
-		os.writeBytes(statusLine);
+		PrintWriter pw = new PrintWriter(socket.getOutputStream());
+		
+		pw.write(statusLine);
+		pw.write(contentTypeLine);
+		pw.write(CRLF);
+		
+		/*os.writeBytes(statusLine);
 		os.writeBytes(contentTypeLine);
-		os.writeBytes(CRLF);
+		os.writeBytes(CRLF);*/
 		
 		if(fileExists){
 			sendBytes(fis, os);
 			fis.close();
 		} else{
-			os.writeBytes(entityBody);
+			pw.write(entityBody);
+			//os.writeBytes(entityBody);
 		}
 		
 		String headerLine = null;
