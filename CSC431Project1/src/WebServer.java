@@ -10,6 +10,12 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+/**
+ * 
+ * @author Ethan and Ryan
+ *	The class that sets the port and socket for our server, as well as
+ *	sets threads to listen for HTTP requests.
+ */
 public final class WebServer {
 
 	@SuppressWarnings("resource")
@@ -37,8 +43,15 @@ public final class WebServer {
 	}
 
 }
+
+/**
+ * 
+ * @author Ethan and Ryan
+ *	The class that process HTTP requests, and delivers an 
+ *	appropriate response according to the details of the request.
+ */
 final class HttpRequest implements Runnable{
-	final static String CRLF = "\r\n";
+	final static String CRLF = "\r\n"; //Character return
 	Socket socket;
 	
 	/**
@@ -49,6 +62,10 @@ final class HttpRequest implements Runnable{
 		this.socket = socket;
 	}
 
+	/*
+	 * @see java.lang.Runnable#run()
+	 * Runs our thread.
+	 */
 	@Override
 	public void run() {
 		try{
@@ -58,6 +75,11 @@ final class HttpRequest implements Runnable{
 		}
 	}
 	
+	/*
+	 * The method that actually processes an HTTP request.
+	 * It parses the request, figures out what it's asking for
+	 * and returns the necessary information or file to the browser.
+	 */
 	private void processRequest() throws Exception{
 		InputStream is = socket.getInputStream();
 		DataOutputStream os = new DataOutputStream(socket.getOutputStream());
@@ -125,6 +147,10 @@ final class HttpRequest implements Runnable{
 		socket.close();
 	}
 	
+	/*
+	 * Method that specifies how the server will send information
+	 * back to the browser that sent the request.
+	 */
 	private static void sendBytes(FileInputStream fis, OutputStream os) throws Exception{
 		byte[] buffer = new byte[1024];
 		int bytes = 0;
@@ -134,6 +160,10 @@ final class HttpRequest implements Runnable{
 		}
 	}
 	
+	/*
+	 * Takes the file extension of our file and returns
+	 * it with the appropriate HTTP content type.
+	 */
 	private static String contentType(String fileName){
 		if(fileName.endsWith(".htm") || fileName.endsWith(".html")){
 			return "text/html";
